@@ -1,0 +1,27 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif}
+.b{width:var(--w);height:var(--h);position:relative;overflow:hidden;color:#fff;
+background:radial-gradient(1200px 500px at 85% 10%,#2a78d6 0%,transparent 60%),linear-gradient(135deg,#071d3d 0%,#0d366b 55%,#184f95 100%)}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:32px 32px}
+.txt{position:absolute;left:var(--pad);top:var(--top);width:var(--tw)}
+.tag{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#b7d3f6}
+.tag i{width:8px;height:8px;border-radius:50%;background:#1baf7a;box-shadow:0 0 0 4px rgba(27,175,122,.25)}
+h1{font-size:var(--h1);line-height:1.02;margin:14px 0 12px;font-weight:800;letter-spacing:-.03em}
+p{font-size:var(--p);line-height:1.4;color:#cde2fb;margin:0 0 20px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.shot{position:absolute;right:var(--sr);top:var(--st);width:var(--sw);border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.15);transform:perspective(1600px) rotateY(-14deg) rotateX(4deg);transform-origin:left center}
+.form{position:absolute;right:var(--fr);top:var(--ft);width:var(--fw);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.15)}
+.kpi{position:absolute;left:var(--pad);bottom:var(--kb);display:flex;gap:26px}
+.kpi div{font-size:12.5px;color:#b7d3f6}.kpi b{display:block;font-size:26px;color:#fff;font-weight:800}
+</style></head><body>
+<div class="b"><div class="grid"></div>
+<div class="txt"><div class="tag"><i></i>Google Sheets · Apps Script · Gemini</div>
+<h1>Cadence Cockpit</h1>
+<p>Pilotage d'une ligne d'assemblage dans Google Sheets : encours, aléas récurrents, métrologie, 5S et brief quotidien rédigé par l'IA, chiffres vérifiés.</p>
+<div class="chips"><span>Lean</span><span>Amélioration continue</span><span>Métrologie</span><span>KPI automatisés</span></div></div>
+<div class="kpi"><div><b>17</b>tests automatisés</div><div><b>0</b>chiffre inventé accepté</div><div><b>7 → 2</b>pic d'étalonnages / semaine</div></div>
+<img class="shot" src="../docs/dashboard_top.png"><img class="form" src="../docs/form.png">
+</div></body></html>

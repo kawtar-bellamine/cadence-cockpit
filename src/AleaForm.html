@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: light; --page: #f3f5f9; --surface: #fff; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781; --ring: rgba(11,11,11,.12);
+    --brand: #0d366b; --accent: #2a78d6; --good-bg: #e7f6e7; --good-ink: #006300; --crit-bg: #fbe5e5; --crit-ink: #a32626; --warn-bg: #fff4d9; --warn-ink: #7a5200; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
+    --ring: rgba(255,255,255,.14); --brand: #9ec5f4; --good-bg: #13301a; --good-ink: #5fd35f; --crit-bg: #3b1a1a; --crit-ink: #f08a8a; --warn-bg: #3a2f10; --warn-ink: #fab219; } }
+  :root[data-theme="dark"] { color-scheme: dark; --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7;
+    --ring: rgba(255,255,255,.14); --brand: #9ec5f4; --good-bg: #13301a; --good-ink: #5fd35f; --crit-bg: #3b1a1a; --crit-ink: #f08a8a; --warn-bg: #3a2f10; --warn-ink: #fab219; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 13px/1.45 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { padding: 16px; }
+  h1 { font-size: 16px; margin: 0 0 2px; color: var(--brand); }
+  .sub { color: var(--ink-2); font-size: 12px; margin-bottom: 14px; }
+  label { display: block; font-weight: 600; font-size: 12px; margin: 12px 0 5px; }
+  .opt { font-weight: 400; color: var(--muted); }
+  input, select, textarea { width: 100%; font: inherit; color: var(--ink); background: var(--surface); border: 0; border-radius: 10px; padding: 9px 10px;
+    box-shadow: inset 0 0 0 1px var(--ring); }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea { min-height: 74px; resize: vertical; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg button { padding: 8px 4px; font-weight: 700; border-radius: 10px; border: 0; background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ring); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--brand); color: #fff; box-shadow: none; }
+  .cats { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cats button { border: 0; border-radius: 999px; padding: 6px 10px; font: inherit; font-size: 12px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--ring); cursor: pointer; }
+  .cats button[aria-pressed="true"] { background: var(--accent); color: #fff; box-shadow: none; }
+  .ai { display: block; margin-top: 8px; font-size: 12px; color: var(--ink-2); min-height: 20px; }
+  .ai b { color: var(--ink); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .submit { width: 100%; margin-top: 16px; padding: 11px; font: inherit; font-weight: 700; border: 0; border-radius: 12px; background: var(--brand); color: #fff; cursor: pointer; }
+  .submit:disabled { opacity: .5; cursor: progress; }
+  .msg { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 12.5px; display: none; }
+  .msg.ok { display: block; background: var(--good-bg); color: var(--good-ink); }
+  .msg.err { display: block; background: var(--crit-bg); color: var(--crit-ink); }
+  .msg.warn { display: block; background: var(--warn-bg); color: var(--warn-ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Déclarer un aléa</h1>
+  <div class="sub">Trente secondes au poste : la catégorie est proposée à partir de la description.</div>
+  <form id="f" autocomplete="off">
+    <label>Poste</label>
+    <div class="seg" id="postes"></div>
+    <label for="lot">Lot concerné <span class="opt">(facultatif)</span></label>
+    <select id="lot"></select>
+    <label for="desc">Que s'est-il passé ?</label>
+    <textarea id="desc" maxlength="300" placeholder="Ex. : foret cassé sur la riveteuse, trous ovalisés"></textarea>
+    <div class="ai" id="ai"></div>
+    <label>Catégorie</label>
+    <div class="cats" id="cats"></div>
+    <div class="row2">
+      <div><label for="min">Arrêt (min)</label><input id="min" type="number" min="0" max="1440" step="5" value="30"></div>
+      <div><label for="resp">Responsable <span class="opt">(facultatif)</span></label><input id="resp" maxlength="80"></div>
+    </div>
+    <label for="pal">Action palliative <span class="opt">(facultatif)</span></label>
+    <input id="pal" maxlength="300" placeholder="Ce qui a été fait pour repartir">
+    <button class="submit" id="go" type="submit">Enregistrer l'aléa</button>
+    <div class="msg" id="msg" role="status"></div>
+  </form>
+</div>
+<script>
+(function () {
+  'use strict';
+  var state = { poste: null, categorie: null, cfg: null };
+  function call(fn, arg) {
+    return new Promise(function (resolve, reject) {
+      if (window.google && google.script && google.script.run) google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg);
+      else if (window.LOCAL_API) Promise.resolve(window.LOCAL_API[fn](arg)).then(resolve, reject);
+      else reject(new Error('Aucune source de données'));
+    });
+  }
+  function el(id) { return document.getElementById(id); }
+  function setPressed(container, value, attr) {
+    Array.prototype.forEach.call(container.children, function (b) { b.setAttribute('aria-pressed', String(b.getAttribute(attr) === value)); });
+  }
+  function msg(kind, text) { var m = el('msg'); m.className = 'msg ' + kind; m.textContent = text; }
+
+  function fillLots() {
+    var p = state.cfg.postes.filter(function (x) { return x.code === state.poste; })[0];
+    var sel = el('lot');
+    sel.innerHTML = '<option value="">Aucun / non connu</option>';
+    (p ? p.lots : []).forEach(function (l) { var o = document.createElement('option'); o.value = l; o.textContent = l; sel.appendChild(o); });
+    if (p && p.lots.length) el('lot').value = p.lots[0];
+  }
+  function pickPoste(code) { state.poste = code; setPressed(el('postes'), code, 'data-v'); fillLots(); }
+  function pickCat(c) { state.categorie = c; setPressed(el('cats'), c, 'data-v'); }
+
+  call('getFormConfig').then(function (cfg) {
+    state.cfg = cfg;
+    el('postes').innerHTML = cfg.postes.map(function (p) { return '<button type="button" data-v="' + p.code + '" title="' + p.name.replace(/"/g, '') + '">' + p.code + '</button>'; }).join('');
+    el('cats').innerHTML = cfg.categories.map(function (c) { return '<button type="button" data-v="' + c.replace(/"/g, '') + '">' + c + '</button>'; }).join('');
+    el('postes').onclick = function (e) { var b = e.target.closest('button'); if (b) pickPoste(b.getAttribute('data-v')); };
+    el('cats').onclick = function (e) { var b = e.target.closest('button'); if (b) pickCat(b.getAttribute('data-v')); };
+    pickPoste(cfg.postes[2] ? cfg.postes[2].code : cfg.postes[0].code);
+    if (!window.google) { el('desc').value = 'Foret cassé sur la riveteuse, trous ovalisés'; suggest(); }
+  }, function (e) { msg('err', e.message || e); });
+
+  var timer = null;
+  function suggest() {
+    var t = el('desc').value.trim();
+    if (t.length < 8) { el('ai').textContent = ''; return; }
+    el('ai').textContent = 'Analyse de la description...';
+    call('suggestCategory', t).then(function (r) {
+      if (!r.categorie) { el('ai').textContent = 'Pas de catégorie évidente : choisissez-la.'; return; }
+      pickCat(r.categorie);
+      el('ai').innerHTML = '';
+      var b = document.createElement('b'); b.textContent = r.categorie;
+      el('ai').append('Catégorie proposée : ', b, ' (' + (r.source === 'Gemini' ? 'Gemini' : 'règles métier') + ', confiance ' + r.confidence + ')');
+    });
+  }
+  el('desc').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(suggest, 600); });
+
+  el('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = { poste: state.poste, categorie: state.categorie, lot: el('lot').value, description: el('desc').value,
+      arretMin: el('min').value, responsable: el('resp').value, palliative: el('pal').value };
+    el('go').disabled = true;
+    call('submitAlea', form).then(function (r) {
+      el('go').disabled = false;
+      if (r.recurrence) msg('warn', r.id + ' enregistré. Attention : ' + r.recurrence.count + ' aléas « ' + r.recurrence.categorie + ' » au poste ' + r.recurrence.poste + ' en 21 jours. Une action durable est attendue.');
+      else msg('ok', r.id + ' enregistré.');
+      el('desc').value = ''; el('pal').value = ''; el('ai').textContent = '';
+    }, function (err) { el('go').disabled = false; msg('err', err.message || String(err)); });
+  });
+})();
+</script>
+</body>
+</html>
